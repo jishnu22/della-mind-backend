@@ -11,21 +11,17 @@ dotenv.config();
 
 const app = express();
 
-/* 🔐 CORS FIX — IMPORTANT */
+/* ✅ RENDER-SAFE CORS CONFIG */
 app.use(
   cors({
     origin: [
-      "http://localhost:8081", // local frontend
-      "http://localhost:8080", // vite dev
-      // "https://della-mind-academy-97.vercel.app", // production frontend (update if needed)
+      "http://localhost:8081",
+      "http://localhost:5173",
+      "https://della-mind-academy-97.vercel.app",
     ],
-    methods: ["GET", "POST", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
-
-// Handle preflight explicitly
-app.options("*", cors());
 
 app.use(express.json());
 
@@ -34,7 +30,9 @@ app.use("/api/auth", auth);
 app.use("/api/course", course);
 app.use("/api/videos", videos);
 
-app.get("/", (_, res) => res.send("Backend running"));
+app.get("/", (req, res) => {
+  res.send("Backend running");
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
