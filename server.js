@@ -17,7 +17,7 @@ app.use(
     origin: [
       "http://localhost:8081",
       "http://localhost:5173",
-      "https://dellacourse.vercel.app/",
+      "https://dellacourse.vercel.app",
     ],
     credentials: true,
   })
