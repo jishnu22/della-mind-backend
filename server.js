@@ -12,13 +12,35 @@ dotenv.config();
 const app = express();
 
 /* ✅ RENDER-SAFE CORS CONFIG */
+// app.use(
+//   cors({
+//     origin: [
+//       "http://localhost:8081",
+//       "http://localhost:5173",
+//       "https://dellacourse.vercel.app",
+//     ],
+//     credentials: true,
+//   })
+// );
 app.use(
   cors({
-    origin: [
-      "http://localhost:8081",
-      "http://localhost:5173",
-      "https://dellacourse.vercel.app",
-    ],
+    origin: (origin, callback) => {
+      // allow non-browser requests (curl, server-to-server)
+      if (!origin) return callback(null, true);
+
+      // allow all localhost ports
+      if (origin.startsWith("http://localhost")) {
+        return callback(null, true);
+      }
+
+      // allow all Vercel deployments
+      if (origin.endsWith(".vercel.app")) {
+        return callback(null, true);
+      }
+
+      // block everything else
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
