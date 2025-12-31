@@ -6,47 +6,32 @@ import payments from "./routes/payments.routes.js";
 import auth from "./routes/auth.routes.js";
 import course from "./routes/course.routes.js";
 import videos from "./routes/videos.routes.js";
+import webhook from "./routes/webhook.routes.js";
 
 dotenv.config();
 
 const app = express();
 
 /* ✅ RENDER-SAFE CORS CONFIG */
-// app.use(
-//   cors({
-//     origin: [
-//       "http://localhost:8081",
-//       "http://localhost:5173",
-//       "https://dellacourse.vercel.app",
-//     ],
-//     credentials: true,
-//   })
-// );
 app.use(
   cors({
     origin: (origin, callback) => {
-      // allow non-browser requests (curl, server-to-server)
       if (!origin) return callback(null, true);
-
-      // allow all localhost ports
-      if (origin.startsWith("http://localhost")) {
-        return callback(null, true);
-      }
-
-      // allow all Vercel deployments
-      if (origin.endsWith(".vercel.app")) {
-        return callback(null, true);
-      }
-
-      // block everything else
+      if (origin.startsWith("http://localhost")) return callback(null, true);
+      if (origin.endsWith(".vercel.app")) return callback(null, true);
       return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
   })
 );
 
+// 🔥 Razorpay webhook FIRST (RAW body)
+app.use("/api/webhooks", webhook);
+
+// ✅ JSON parsing AFTER webhook
 app.use(express.json());
 
+// Normal routes
 app.use("/api/payments", payments);
 app.use("/api/auth", auth);
 app.use("/api/course", course);
