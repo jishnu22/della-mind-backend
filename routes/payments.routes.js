@@ -37,11 +37,11 @@ router.post("/verify", async (req, res) => {
 
   await pool.query(
     `INSERT INTO payments (email, payment_id, course_id, status)
-     VALUES ($1, $2, $3, 'PAID')`,
+     VALUES ($1, $2, $3, 'PENDING')`,
     [email, razorpay_payment_id, "beginner-mentalism"]
   );
 
-  res.json({ status: "PAID" });
+  res.json({ status: "PROCESSING" });
 });
 
 export default router;
