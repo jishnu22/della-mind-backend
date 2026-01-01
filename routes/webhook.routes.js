@@ -30,19 +30,26 @@ router.post(
 
       // ✅ FINAL PAYMENT CONFIRMATION
       if (event.event === "payment.captured") {
-        const payment = event.payload.payment.entity;
+  console.log("🔥 WEBHOOK EVENT:", event.event);
 
-        await pool.query(
-          `
-          UPDATE payments
-          SET status = 'PAID'
-          WHERE payment_id = $1
-          `,
-          [payment.id]
-        );
+  const payment = event.payload.payment.entity;
 
-        // 🔓 FINAL place to unlock course access
-      }
+  console.log("🔥 PAYMENT ID FROM WEBHOOK:", payment.id);
+  console.log("🔥 ORDER ID FROM WEBHOOK:", payment.order_id);
+  console.log("🔥 PAYMENT STATUS:", payment.status);
+
+  await pool.query(
+    `
+    UPDATE payments
+    SET status = 'PAID'
+    WHERE payment_id = $1
+    `,
+    [payment.id]
+  );
+
+  console.log("🔥 DB UPDATE ATTEMPT DONE");
+}
+
 
       res.status(200).json({ status: "ok" });
     } catch (err) {
