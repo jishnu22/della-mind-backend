@@ -35,21 +35,12 @@ router.post("/verify", async (req, res) => {
     return res.status(401).json({ status: "FAILED" });
   }
 
-  // ✅ INSERT AS PENDING (unchanged)
+  // ✅ UPSERT: Insert if not exists, Update if does (Race condition safe)
   await pool.query(
     `INSERT INTO payments (email, payment_id, course_id, status)
-     VALUES ($1, $2, $3, 'PENDING')
-     ON CONFLICT (payment_id) DO NOTHING`,
+     VALUES ($1, $2, $3, 'PAID')
+     ON CONFLICT (payment_id) DO UPDATE SET status = 'PAID'`,
     [email, razorpay_payment_id, "beginner-mentalism"]
-  );
-
-  // 🔁 SAFETY SYNC (CRITICAL FIX)
-  // Webhook may have already fired before this insert
-  await pool.query(
-    `UPDATE payments
-     SET status = 'PAID'
-     WHERE payment_id = $1`,
-    [razorpay_payment_id]
   );
 
   res.json({ status: "PROCESSING" });

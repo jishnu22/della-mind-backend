@@ -48,16 +48,21 @@ router.post(
         console.log("🔥 ORDER ID FROM WEBHOOK:", payment.order_id);
         console.log("🔥 PAYMENT STATUS:", payment.status);
 
+        // ✅ UPSERT: Insert if not exists, Update if does (Race condition safe)
         const result = await pool.query(
           `
-          UPDATE payments
-          SET status = 'PAID'
-          WHERE payment_id = $1
+          INSERT INTO payments (email, payment_id, course_id, status)
+          VALUES ($1, $2, $3, 'PAID')
+          ON CONFLICT (payment_id) DO UPDATE SET status = 'PAID'
           `,
-          [payment.id]
+          [
+            payment.email || "webhook@pending.com", // Fallback if email missing
+            payment.id,
+            "beginner-mentalism", // Current course ID
+          ]
         );
 
-        console.log("🔥 DB ROWS UPDATED:", result.rowCount);
+        console.log("🔥 DB ROWS UPDATED/INSERTED:", result.rowCount);
       }
 
       res.status(200).json({ status: "ok" });

@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import { pool } from "./config/db.js";
 
 import payments from "./routes/payments.routes.js";
 import auth from "./routes/auth.routes.js";
@@ -11,6 +12,17 @@ import webhook from "./routes/webhook.routes.js";
 dotenv.config();
 
 const app = express();
+
+// 🛠️ AUTO-REPAIR SEQUENCE (FIXES DUPLICATE KEY ERRORS)
+async function syncSequence() {
+  try {
+    await pool.query("SELECT setval(pg_get_serial_sequence('payments', 'id'), coalesce(max(id), 0) + 1, false) FROM payments");
+    console.log("✅ DATABASE SEQUENCE SYNCED");
+  } catch (err) {
+    console.error("❌ SEQUENCE SYNC FAILED:", err.message);
+  }
+}
+syncSequence();
 
 /* ✅ RENDER-SAFE CORS CONFIG */
 app.use(
