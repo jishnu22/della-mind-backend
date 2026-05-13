@@ -7,13 +7,13 @@ const router = express.Router();
 
 router.post("/create-order", async (_, res) => {
   const order = await razorpay.orders.create({
-    amount: 350 * 100,
+    amount: 380 * 100,
     currency: "INR"
   });
 
   res.json({
     order_id: order.id,
-    amount: 350
+    amount: 380
   });
 });
 
